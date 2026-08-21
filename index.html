@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BCNscanner — 2m VHF Beacon List</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #131a22;
+    --border: #223042;
+    --text: #d8e2ee;
+    --muted: #7d8fa3;
+    --accent: #38c172;
+    --warn: #e6a23c;
+    --dead: #e05555;
+    --info: #4aa3e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    min-height: 100vh;
+  }
+  header {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h1 { font-size: 1.4rem; letter-spacing: 1px; }
+  h1 span { color: var(--accent); }
+  .status-line { color: var(--muted); font-size: .85rem; }
+  .status-line b { color: var(--text); }
+  .controls {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 16px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .toggle-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: .85rem;
+    user-select: none;
+  }
+  .toggle-btn.active { border-color: var(--accent); color: var(--accent); }
+  #roto-az {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font: inherit;
+    width: 70px;
+    text-align: right;
+  }
+  #roto-az.commanded { color: var(--warn); font-style: italic; }
+  td.brg { cursor: pointer; }
+  tr.in-beam td { background: rgba(56, 193, 114, .08); }
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 6px;
+    display: none;
+    z-index: 9;
+  }
+  #search {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: 6px;
+    font: inherit;
+    width: 260px;
+  }
+  #search:focus { outline: none; border-color: var(--accent); }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 16px 32px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: .85rem; white-space: nowrap; }
+  th {
+    color: var(--muted);
+    font-weight: normal;
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { color: var(--text); }
+  th.sorted::after { content: " ▾"; color: var(--accent); }
+  th.sorted.asc::after { content: " ▴"; }
+  td.num { text-align: right; }
+  tr:hover td { background: #16202b; }
+  .badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: .72rem;
+    border: 1px solid var(--border);
+  }
+  .st-O { color: var(--accent); border-color: var(--accent); }
+  .st-T { color: var(--warn); border-color: var(--warn); }
+  .st-P { color: var(--info); border-color: var(--info); }
+  .st-X { color: var(--dead); border-color: var(--dead); }
+  .st-U { color: var(--muted); }
+  .arr { display: inline-block; transition: transform .2s; }
+  td.call { font-weight: bold; }
+  td.comment { white-space: normal; min-width: 220px; color: var(--muted); font-size: .78rem; }
+  footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: .75rem;
+    padding-bottom: 24px;
+  }
+  footer a { color: var(--info); }
+</style>
+</head>
+<body>
+<header>
+  <h1>BCN<span>scanner</span></h1>
+  <div class="status-line">
+    <b id="count">—</b> beacons · <b id="dxccn">—</b> DXCC ·
+    bearing from <b id="mygrid">—</b> · updated
+    <b id="updated">—</b> · <span id="clock">--:--:--</span> UTC<br>
+    <span id="conts" style="font-size:.75rem"></span>
+  </div>
+</header>
+
+<div class="controls">
+  <input id="search" type="search" placeholder="filter callsign / locator / comment…" autofocus>
+  <span id="roto-box" style="display:none; display:none">
+    <span id="roto-btn" class="toggle-btn">roto</span>
+    <span style="color:var(--muted);font-size:.8rem">az</span>
+    <input id="roto-az" type="text" placeholder="---"
+           title="Antenna bearing - press Enter to turn">
+  </span>
+</div>
+
+<main>
+  <table id="tbl">
+    <thead><tr>
+      <th data-key="freq_mhz">MHz</th>
+      <th data-key="call">Call</th>
+      <th data-key="dxcc">DXCC Country</th>
+      <th data-key="continent">Cont</th>
+      <th data-key="locator">Locator</th>
+      <th data-key="distance_km">Dist km</th>
+      <th data-key="bearing_deg">Brg°</th>
+      <th data-key="erp_w">ERP W</th>
+      <th data-key="status">Sts</th>
+      <th>Comment</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</main>
+
+<footer>
+  source: <a href="https://www.mmmonvhf.de/bcn.php" target="_blank">MMMonVHF beacon project</a> ·
+  DXCC data: <a href="https://www.country-files.com/" target="_blank">country-files.com cty.dat</a> ·
+  refreshed every 12h · status O=operational T=testing P=proposed X=off air U=unknown
+</footer>
+<div id="toast"></div>
+
+<script>
+let all = [];
+let filter = '';
+let sortKey = 'freq_mhz';
+let sortAsc = true;
+
+const $ = id => document.getElementById(id);
+const CONTINENTS = {
+  AF: 'Africa', AN: 'Antarctica', AS: 'Asia', EU: 'Europe',
+  NA: 'North America', OC: 'Oceania', SA: 'South America',
+};
+
+const BEAM_WIDTH = 30;
+let rotoEnabled = false;
+let rotoOn = false;
+let rotoAz = null;
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+function angDiff(a, b) {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+}
+
+async function turnAntenna(bearing) {
+  if (!rotoEnabled) return toast('Rotator disabled in config');
+  if (!rotoOn) return toast('Rotor off - toggle "roto" first');
+  try {
+    const r = await fetch('/api/rotator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bearing }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+    rotoAz = d.bearing;
+    $('roto-az').classList.add('commanded');
+    render();
+    toast(`Turning antenna to ${d.bearing}°`);
+  } catch (e) {
+    toast('Turn failed: ' + e.message);
+  }
+}
+
+function pollRotator() {
+  fetch('/api/rotator').then(r => r.ok ? r.json() : null).then(d => {
+    if (d && d.bearing != null && d.source === 'controller') {
+      rotoAz = d.bearing;
+      $('roto-az').value = d.bearing;
+      $('roto-az').classList.remove('commanded');
+      render();
+    }
+  }).catch(() => {});
+}
+
+function initRotator(status) {
+  rotoEnabled = !!(status.rotator && status.rotator.enabled);
+  if (!rotoEnabled) return;
+  $('roto-box').style.display = '';
+  pollRotator();
+  setInterval(pollRotator, 2000);
+}
+
+function cmpVal(v) {
+  return v == null || v === '' ? Infinity : v;
+}
+
+function render() {
+  const f = filter.toLowerCase();
+  let rows = all.filter(b =>
+    !f || b.call.toLowerCase().includes(f)
+      || b.locator.toLowerCase().includes(f)
+      || (b.dxcc || '').toLowerCase().includes(f)
+      || (b.comment || '').toLowerCase().includes(f)
+      || String(b.freq_mhz).includes(f)
+  );
+  rows.sort((a, b) => {
+    const x = cmpVal(a[sortKey]), y = cmpVal(b[sortKey]);
+    const c = typeof x === 'string' ? x.localeCompare(y) : x - y;
+    return sortAsc ? c : -c;
+  });
+
+  document.querySelectorAll('th[data-key]').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.key === sortKey);
+    th.classList.toggle('asc', th.dataset.key === sortKey && sortAsc);
+  });
+
+  $('rows').innerHTML = rows.map(b => {
+    const inBeam = rotoAz != null && b.bearing_deg != null
+      && angDiff(b.bearing_deg, rotoAz) <= BEAM_WIDTH;
+    const brgCell = b.bearing_deg != null
+      ? `<td class="brg num" title="click to turn antenna"
+             onclick="turnAntenna(${b.bearing_deg})">
+           <span class="arr" style="transform:rotate(${b.bearing_deg}deg)">↑</span> ${b.bearing_deg}°
+         </td>`
+      : '<td class="num">—</td>';
+    return `<tr class="${inBeam ? 'in-beam' : ''}" title="${(b.antenna || '') + ' ' + (b.qtf ? 'QTF ' + b.qtf : '')}">
+      <td class="num">${b.freq_mhz.toFixed(3)}</td>
+      <td class="call">${b.call}</td>
+      <td>${b.dxcc || '—'}</td>
+      <td title="${CONTINENTS[b.continent] || ''}">${b.continent || '—'}</td>
+      <td>${b.locator}</td>
+      <td class="num">${b.distance_km ?? '—'}</td>
+      ${brgCell}
+      <td class="num">${b.erp_w ?? '—'}</td>
+      <td><span class="badge st-${b.status}" title="${b.status_label}">${b.status}</span></td>
+      <td class="comment">${b.comment || ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function load() {
+  try {
+    const [beaconsR, statusR] = await Promise.all([
+      fetch('/api/beacons'),
+      fetch('/api/status'),
+    ]);
+    all = await beaconsR.json();
+    const s = await statusR.json();
+
+    $('count').textContent = s.count;
+    $('dxccn').textContent = s.dxcc_entities;
+    $('mygrid').textContent = s.listening_grid || 'n/a';
+    $('updated').textContent =
+      s.updated_utc ? new Date(s.updated_utc).toISOString().slice(11, 16) : '—';
+    $('conts').textContent = Object.entries(s.continent_counts || {})
+      .map(([c, n]) => `${c} ${n}`).join(' · ');
+    initRotator(s);
+    render();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+$('search').addEventListener('input', e => { filter = e.target.value.trim(); render(); });
+$('roto-btn').addEventListener('click', () => {
+  rotoOn = !rotoOn;
+  $('roto-btn').classList.toggle('active', rotoOn);
+  toast(rotoOn ? 'Rotor ON - click a bearing to turn the antenna' : 'Rotor OFF');
+});
+$('roto-az').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const v = parseInt(e.target.value, 10);
+  if (isNaN(v) || v < 0 || v > 360) return toast('Enter bearing 0-360');
+  turnAntenna(v);
+});
+document.querySelectorAll('th[data-key]').forEach(th => {
+  th.addEventListener('click', () => {
+    if (sortKey === th.dataset.key) sortAsc = !sortAsc;
+    else { sortKey = th.dataset.key; sortAsc = true; }
+    render();
+  });
+});
+
+load();
+setInterval(load, 60000);
+setInterval(() => {
+  $('clock').textContent = new Date().toISOString().slice(11, 19);
+}, 1000);
+</script>
+</body>
+</html>
