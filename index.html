@@ -176,8 +176,7 @@
   <div class="status-line">
     <b id="count">—</b> beacons · <b id="dxccn">—</b> DXCC ·
     bearing from <b id="mygrid">—</b> · updated
-    <b id="updated">—</b> · <span id="clock">--:--:--</span> UTC<br>
-    <span id="conts" style="font-size:.75rem"></span>
+    <b id="updated">—</b> · <span id="clock">--:--:--</span> UTC
   </div>
 </header>
 
@@ -500,8 +499,6 @@ async function load() {
     $('mygrid').textContent = s.listening_grid || 'n/a';
     $('updated').textContent =
       s.updated_utc ? new Date(s.updated_utc).toISOString().slice(11, 16) : '—';
-    $('conts').textContent = Object.entries(s.continent_counts || {})
-      .map(([c, n]) => `${c} ${n}`).join(' · ');
     myGrid = s.listening_grid || '';
     initRotator(s);
     initRadio(s);
