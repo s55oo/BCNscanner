@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from flask import Flask, jsonify, request
 
 import rotator
+import radio
 
 app = Flask(__name__)
 
@@ -215,6 +216,7 @@ def refresher():
 load_cty()
 refresh(force_download=False)
 rotator.start()
+radio.start()
 threading.Thread(target=refresher, daemon=True).start()
 
 
@@ -236,6 +238,7 @@ def status():
         "continent_counts": continents,
         "dxcc_entities": len({b["dxcc"] for b in beacons if "dxcc" in b}),
         "rotator": {"enabled": rotator.ENABLED, "type": rotator.TYPE},
+        "radio": {"enabled": radio.ENABLED, "tune_mode": radio.TUNE_MODE},
         "updated_utc": (
             datetime.fromtimestamp(loaded_at, timezone.utc).isoformat()
             if loaded_at else None
@@ -271,6 +274,40 @@ def post_rotator():
         return jsonify({"error": "bearing out of range"}), 400
     reply = rotator.move(bearing)
     return jsonify({"ok": True, "bearing": int(bearing) % 360, "reply": reply})
+
+
+@app.get("/api/radio")
+def get_radio():
+    if not radio.ENABLED:
+        return jsonify({"error": "radio control disabled"}), 400
+    st = radio.get_state()
+    if st["freq_hz"] is None:
+        return jsonify({"error": "position unknown"}), 503
+    st.update(host=radio.HOST, port=radio.PORT, tune_mode=radio.TUNE_MODE)
+    return jsonify(st)
+
+
+@app.post("/api/radio")
+def post_radio():
+    if not radio.ENABLED:
+        return jsonify({"error": "radio control disabled"}), 400
+    data = request.get_json(force=True, silent=True) or {}
+    if data.get("freq_mhz") is not None:
+        hz = float(data["freq_mhz"]) * 1e6
+    elif data.get("freq_khz") is not None:
+        hz = float(data["freq_khz"]) * 1e3
+    elif data.get("freq_hz") is not None:
+        hz = float(data["freq_hz"])
+    else:
+        return jsonify({"error": "missing freq"}), 400
+    if not 1e5 <= hz <= 1e10:
+        return jsonify({"error": "frequency out of range"}), 400
+    try:
+        radio.tune(int(hz))
+    except ConnectionError as e:
+        return jsonify({"error": str(e)}), 502
+    return jsonify({"ok": True, "freq_hz": int(hz),
+                    "mode": radio.TUNE_MODE or None})
 
 
 if __name__ == "__main__":
