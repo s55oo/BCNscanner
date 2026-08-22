@@ -13,6 +13,7 @@ Live beacon data is pulled from [mmmonvhf.de](https://www.mmmonvhf.de/bcn.php), 
 - **Header readouts** — rig frequency and antenna azimuth beside the BCNscanner title (same monospace style), tab-separated; amber italic when manually commanded
 - **Continent filter** — clickable pills (EU default view) with per-continent counts
 - **Status switches** — `noP` / `noU` / `noX` / `noT` hide Proposed / Unknown / Off-air / Testing beacons; all filters persist in the browser
+- **Distance limiter** — `dist` button caps the list/radar to a max range (100–2000 km); left-click widens, right-click narrows
 - **Radar scope** — beacons plotted around your grid by bearing/distance, range rings, antenna beam cone (±30°), tuned-beacon highlight
 - **Rotator control** — click any bearing (table cell or radar dot) to turn the antenna; live azimuth display polled from the controller
 - **Radio tuning** — click any frequency to tune the radio via Hamlib `rigctld` (mode fixed to USB by default)
@@ -110,6 +111,7 @@ Hardware endpoints return `400 {"error":"... disabled"}` unless enabled in confi
 - **Header readouts** show frequency (from rigctld) and antenna bearing (from the rotator controller) next to the title; demo values `144.400 MHz` / `180°` are displayed until hardware reports
 - **roto** toggle arms antenna control (off by default): click a bearing cell or radar dot to turn; type azimuth in header box + Enter for manual turns; amber italic = commanded but not yet confirmed
 - **tune** toggle arms radio control: click a MHz cell to tune; tuned row highlighted blue
+- **dist** button limits beacons to a maximum distance: left-click steps the range up (`all → 100 → … → 2000 km`, wraps), right-click steps it down; label shows the active cap and the setting survives reloads
 - Radar dots show call/DXCC/km/bearing on hover; beam cone follows reported azimuth
 - All filter/toggle states survive reloads (browser localStorage)
 

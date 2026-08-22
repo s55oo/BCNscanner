@@ -223,6 +223,7 @@
   <span id="hide-x" class="toggle-btn" title="Hide Off-air beacons">noX</span>
   <span id="hide-t" class="toggle-btn" title="Hide Testing beacons">noT</span>
   <span id="radar-btn" class="toggle-btn" title="Toggle radar view">radar</span>
+  <span id="dist-btn" class="toggle-btn" title="Max distance - left-click: wider range, right-click: narrower">dist all</span>
   <span id="radio-box" style="display:none">
     <span id="tune-btn" class="toggle-btn">tune</span>
     <span style="color:var(--muted);font-size:.8rem">MHz</span>
@@ -283,6 +284,8 @@ let hideU = localStorage.getItem('bcn_hide_u') === '1';
 let hideX = localStorage.getItem('bcn_hide_x') === '1';
 let hideT = localStorage.getItem('bcn_hide_t') === '1';
 let radarOn = localStorage.getItem('bcn_radar') === '1';
+let maxDist = parseInt(localStorage.getItem('bcn_max_dist') || '0', 10) || 0;
+const DIST_STEPS = [100, 200, 300, 500, 750, 1000, 1500, 2000];
 let myGrid = '';
 
 const $ = id => document.getElementById(id);
@@ -492,6 +495,7 @@ function render() {
       || (b.comment || '').toLowerCase().includes(f)
       || String(b.freq_mhz).includes(f))
       && (!contFilter || b.continent === contFilter)
+      && (!maxDist || (b.distance_km != null && b.distance_km <= maxDist))
       && (!hideP || b.status !== 'P')
       && (!hideU || b.status !== 'U')
       && (!hideX || b.status !== 'X')
@@ -579,6 +583,30 @@ function bindHideToggle(id, key, getVal, setVal) {
     render();
   });
 }
+function distLabel() {
+  return maxDist ? `dist \u2264${maxDist}km` : 'dist all';
+}
+
+function setDist(v) {
+  const hi = DIST_STEPS[DIST_STEPS.length - 1];
+  maxDist = Math.max(0, Math.min(hi, v || 0));
+  localStorage.setItem('bcn_max_dist', String(maxDist));
+  const btn = $('dist-btn');
+  btn.textContent = distLabel();
+  btn.classList.toggle('active', !!maxDist);
+  render();
+}
+
+$('dist-btn').addEventListener('click', () => {
+  setDist(DIST_STEPS.find(s => s > maxDist) ?? 0);
+});
+$('dist-btn').addEventListener('contextmenu', e => {
+  e.preventDefault();
+  setDist([...DIST_STEPS].reverse().find(s => s < maxDist) ?? 0);
+});
+$('dist-btn').textContent = distLabel();
+$('dist-btn').classList.toggle('active', !!maxDist);
+
 bindHideToggle('hide-p', 'bcn_hide_p', () => hideP, v => hideP = v);
 bindHideToggle('hide-u', 'bcn_hide_u', () => hideU, v => hideU = v);
 bindHideToggle('hide-x', 'bcn_hide_x', () => hideX, v => hideX = v);
