@@ -1,12 +1,16 @@
 # BCNscanner
 
-Dockerized web application for monitoring the **MMMonVHF 2m beacon list** with DXCC country lookup, distance/bearing calculation from your own QRA locator, antenna rotator control and rigctld radio tuning — all from a single dark-themed dashboard.
+Dockerized web application for monitoring the **MMMonVHF 2m beacon list** with DXCC country lookup, distance/bearing calculation from your own QRA locator, antenna rotator control and rigctld radio tuning — all from a single light-themed dashboard.
+
+The top header shows the live rig frequency and antenna azimuth next to the title; before hardware connects it displays demo values (**144.400 MHz / 180°**).
 
 Live beacon data is pulled from [mmmonvhf.de](https://www.mmmonvhf.de/bcn.php), DXCC entities come from [country-files.com](https://www.country-files.com/) (`cty.dat`), both auto-refreshed every 12h with bundled fallback copies.
 
 ## Features
 
 - **Beacon table** — frequency, callsign, DXCC country, continent, locator, distance, bearing, ERP, status badge, comment; sortable columns, live search
+- **Two-column layout** — radar scope and beacon table sit side by side, each with its own panel header ("Radar" / "Beacon list"); stacks vertically below 900px
+- **Header readouts** — rig frequency and antenna azimuth beside the BCNscanner title (same monospace style), tab-separated; amber italic when manually commanded
 - **Continent filter** — clickable pills (EU default view) with per-continent counts
 - **Status switches** — `noP` / `noU` / `noX` / `noT` hide Proposed / Unknown / Off-air / Testing beacons; all filters persist in the browser
 - **Radar scope** — beacons plotted around your grid by bearing/distance, range rings, antenna beam cone (±30°), tuned-beacon highlight
@@ -49,8 +53,8 @@ ROTATOR_TCP_PORT=2000          # gs232 raw TCP port
 
 # Radio via rigctld
 RADIO_ENABLED=yes
-RADIO_HOST=127.0.0.1           # host running rigctld
-RADIO_PORT=4532                # rigctld default port
+RADIO_HOST=10.147.17.32         # host running rigctld (shack box)
+RADIO_PORT=4532                 # rigctld default port
 RADIO_TUNE_MODE=USB            # mode set before each tune; empty = don't touch mode
 ```
 
@@ -103,6 +107,7 @@ Hardware endpoints return `400 {"error":"... disabled"}` unless enabled in confi
 
 ## UI Usage
 
+- **Header readouts** show frequency (from rigctld) and antenna bearing (from the rotator controller) next to the title; demo values `144.400 MHz` / `180°` are displayed until hardware reports
 - **roto** toggle arms antenna control (off by default): click a bearing cell or radar dot to turn; type azimuth in header box + Enter for manual turns; amber italic = commanded but not yet confirmed
 - **tune** toggle arms radio control: click a MHz cell to tune; tuned row highlighted blue
 - Radar dots show call/DXCC/km/bearing on hover; beam cone follows reported azimuth

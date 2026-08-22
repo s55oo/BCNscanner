@@ -6,15 +6,16 @@
 <title>BCNscanner — 2m VHF Beacon List</title>
 <style>
   :root {
-    --bg: #0b0f14;
-    --panel: #131a22;
-    --border: #223042;
-    --text: #d8e2ee;
-    --muted: #7d8fa3;
-    --accent: #38c172;
-    --warn: #e6a23c;
-    --dead: #e05555;
-    --info: #4aa3e0;
+    --bg: #ffffff;
+    --panel: #f4f6f9;
+    --border: #d8dee7;
+    --text: #16212e;
+    --muted: #5c6b7c;
+    --accent: #17864b;
+    --warn: #b96a06;
+    --dead: #d33a3a;
+    --info: #2b6cb0;
+    --maxw: 1400px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -24,7 +25,7 @@
     min-height: 100vh;
   }
   header {
-    max-width: 1100px;
+    max-width: var(--maxw);
     margin: 0 auto;
     padding: 24px 16px 12px;
     display: flex;
@@ -35,10 +36,15 @@
   }
   h1 { font-size: 1.4rem; letter-spacing: 1px; }
   h1 span { color: var(--accent); }
+  .hdr-left { display: flex; align-items: baseline; gap: 18px; }
+  #hdr-readouts { display: flex; gap: 2.5em; align-items: baseline; margin-left: .5em; }
   .status-line { color: var(--muted); font-size: .85rem; }
   .status-line b { color: var(--text); }
+  .hdr-val { font-size: 1.4rem; letter-spacing: 1px; }
+  .hdr-val small { font-size: .75rem; color: var(--muted); margin-left: 2px; }
+  .hdr-val.commanded { color: var(--warn); font-style: italic; }
   .controls {
-    max-width: 1100px;
+    max-width: var(--maxw);
     margin: 0 auto;
     padding: 0 16px 16px;
     display: flex;
@@ -94,18 +100,18 @@
   #radio-freq.commanded { color: var(--warn); font-style: italic; }
   td.frq { cursor: pointer; }
   td.frq:hover { color: var(--accent); }
-  tr.tuned-row td { background: rgba(74, 163, 224, .12); }
-  #radar-wrap { display: flex; justify-content: center; padding: 0 16px 8px; }
-  #radar { width: min(480px, 92vw); height: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 50%; }
+  tr.tuned-row td { background: rgba(43, 108, 176, .12); }
+  #radar-wrap { display: flex; }
+  #radar { width: min(480px, 100%); height: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 50%; }
   #radar text { fill: var(--muted); font-size: 12px; font-family: inherit; }
   #radar text.card { fill: var(--text); font-weight: bold; }
   #radar .ring { fill: none; stroke: var(--border); }
   #radar .spoke { stroke: var(--border); stroke-dasharray: 2 4; }
-  #radar .beam { fill: rgba(56, 193, 114, .18); }
+  #radar .beam { fill: rgba(23, 134, 75, .15); }
   #radar .bcn { cursor: pointer; }
   #radar .home-label { fill: var(--accent); }
   td.brg { cursor: pointer; }
-  tr.in-beam td { background: rgba(56, 193, 114, .08); }
+  tr.in-beam td { background: rgba(23, 134, 75, .08); }
   #toast {
     position: fixed;
     bottom: 24px;
@@ -128,7 +134,31 @@
     width: 260px;
   }
   #search:focus { outline: none; border-color: var(--accent); }
-  main { max-width: 1100px; margin: 0 auto; padding: 0 16px 32px; overflow-x: auto; }
+  .layout {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 16px 32px;
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+  .panel { min-width: 0; }
+  .panel h2 {
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  #table-panel { flex: 1 1 auto; overflow-x: auto; }
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    #radar { width: min(480px, 92vw); }
+  }
+  main { width: 100%; }
   table { width: 100%; border-collapse: collapse; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: .85rem; white-space: nowrap; }
   th {
@@ -144,7 +174,7 @@
   th.sorted::after { content: " ▾"; color: var(--accent); }
   th.sorted.asc::after { content: " ▴"; }
   td.num { text-align: right; }
-  tr:hover td { background: #16202b; }
+  tr:hover td { background: #edf1f6; }
   .badge {
     display: inline-block;
     padding: 1px 8px;
@@ -161,7 +191,7 @@
   td.call { font-weight: bold; }
   td.comment { white-space: normal; min-width: 220px; color: var(--muted); font-size: .78rem; }
   footer {
-    max-width: 1100px;
+    max-width: var(--maxw);
     margin: 0 auto;
     color: var(--muted);
     font-size: .75rem;
@@ -172,7 +202,13 @@
 </head>
 <body>
 <header>
-  <h1>BCN<span>scanner</span></h1>
+  <div class="hdr-left">
+    <h1>BCN<span>scanner</span></h1>
+    <div id="hdr-readouts">
+      <span id="hdr-freq" class="hdr-val">144.400<small> MHz</small></span>
+      <span id="hdr-hdg" class="hdr-val">180<small>°</small></span>
+    </div>
+  </div>
   <div class="status-line">
     <b id="count">—</b> beacons · <b id="dxccn">—</b> DXCC ·
     bearing from <b id="mygrid">—</b> · updated
@@ -203,10 +239,15 @@
 
 <div class="controls" id="cont-filters"></div>
 
-<div id="radar-wrap"><svg id="radar" viewBox="0 0 480 480"></svg></div>
+<div class="layout">
+  <section class="panel" id="radar-panel">
+    <h2>Radar</h2>
+    <div id="radar-wrap"><svg id="radar" viewBox="0 0 480 480"></svg></div>
+  </section>
 
-<main>
-  <table id="tbl">
+  <main class="panel" id="table-panel">
+    <h2>Beacon list</h2>
+    <table id="tbl">
     <thead><tr>
       <th data-key="freq_mhz">MHz</th>
       <th data-key="call">Call</th>
@@ -221,7 +262,8 @@
     </tr></thead>
     <tbody id="rows"></tbody>
   </table>
-</main>
+  </main>
+</div>
 
 <footer>
   source: <a href="https://www.mmmonvhf.de/bcn.php" target="_blank">MMMonVHF beacon project</a> ·
@@ -292,12 +334,17 @@ async function turnAntenna(bearing) {
 
 function pollRotator() {
   fetch('/api/rotator').then(r => r.ok ? r.json() : null).then(d => {
-    if (d && d.bearing != null && d.source === 'controller') {
+    if (!d || d.bearing == null) return;
+    const ctl = d.source === 'controller';
+    if (ctl) {
       rotoAz = d.bearing;
       $('roto-az').value = d.bearing;
       $('roto-az').classList.remove('commanded');
       render();
     }
+    const h = $('hdr-hdg');
+    h.innerHTML = `${d.bearing}<small>°</small>`;
+    h.classList.toggle('commanded', !ctl);
   }).catch(() => {});
 }
 
@@ -305,6 +352,7 @@ function initRotator(status) {
   rotoEnabled = !!(status.rotator && status.rotator.enabled);
   if (!rotoEnabled) return;
   $('roto-box').style.display = '';
+  $('hdr-hdg').style.display = '';
   pollRotator();
   setInterval(pollRotator, 2000);
 }
@@ -333,13 +381,18 @@ async function tuneTo(freqMhz) {
 
 function pollRadio() {
   fetch('/api/radio').then(r => r.ok ? r.json() : null).then(d => {
-    if (d && d.freq_hz != null && d.source === 'controller') {
+    if (!d || d.freq_hz == null) return;
+    const ctl = d.source === 'controller';
+    if (ctl) {
       tunedHz = d.freq_hz;
       const el = $('radio-freq');
       el.value = (d.freq_hz / 1e6).toFixed(3);
       el.classList.remove('commanded');
       render();
     }
+    const h = $('hdr-freq');
+    h.innerHTML = `${(d.freq_hz / 1e6).toFixed(3)}<small> MHz</small>`;
+    h.classList.toggle('commanded', !ctl);
   }).catch(() => {});
 }
 
@@ -347,6 +400,7 @@ function initRadio(status) {
   radioEnabled = !!(status.radio && status.radio.enabled);
   if (!radioEnabled) return;
   $('radio-box').style.display = '';
+  $('hdr-freq').style.display = '';
   pollRadio();
   setInterval(pollRadio, 2000);
 }
@@ -369,12 +423,12 @@ function buildContFilters() {
 }
 
 const RADAR_C = 240, RADAR_R = 225;
-const STATUS_COLOR = { O: '#38c172', T: '#e6a23c', P: '#4aa3e0', U: '#7d8fa3', X: '#e05555' };
+const STATUS_COLOR = { O: '#17864b', T: '#b96a06', P: '#2b6cb0', U: '#5c6b7c', X: '#d33a3a' };
 
 function renderRadar(rows) {
   const svg = $('radar');
   $('radar-btn').classList.toggle('active', radarOn);
-  $('radar-wrap').style.display = radarOn ? 'flex' : 'none';
+  $('radar-panel').style.display = radarOn ? '' : 'none';
   if (!radarOn) return;
 
   const dists = rows.map(b => b.distance_km).filter(d => d != null);
@@ -405,12 +459,12 @@ function renderRadar(rows) {
     s += `<path class="beam" d="M${C},${C}
             L${(C + R * Math.sin(a1)).toFixed(1)},${(C - R * Math.cos(a1)).toFixed(1)}
             A${R},${R} 0 0 1 ${(C + R * Math.sin(a2)).toFixed(1)},${(C - R * Math.cos(a2)).toFixed(1)} Z"/>`;
-    s += `<line stroke="#38c172" stroke-width="1.5" x1="${C}" y1="${C}"
+    s += `<line stroke="#17864b" stroke-width="1.5" x1="${C}" y1="${C}"
             x2="${(C + R * Math.sin(rotoAz * Math.PI / 180)).toFixed(1)}"
             y2="${(C - R * Math.cos(rotoAz * Math.PI / 180)).toFixed(1)}"/>`;
   }
 
-  s += `<circle fill="#38c172" cx="${C}" cy="${C}" r="4"/>
+  s += `<circle fill="#17864b" cx="${C}" cy="${C}" r="4"/>
         <text class="home-label" text-anchor="middle" x="${C}" y="${C + 18}">${myGrid || ''}</text>`;
 
   for (const b of rows) {
@@ -421,7 +475,7 @@ function renderRadar(rows) {
     const tuned = tunedHz != null && Math.abs(b.freq_mhz * 1e6 - tunedHz) <= 30;
     s += `<circle class="bcn" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}"
              r="${tuned ? 6 : 4}" fill="${STATUS_COLOR[b.status] || '#888'}"
-             ${tuned ? 'stroke="#4aa3e0" stroke-width="2"' : ''}
+             ${tuned ? 'stroke="#2b6cb0" stroke-width="2"' : ''}
              onclick="turnAntenna(${b.bearing_deg})">
            <title>${b.call} · ${b.dxcc || '?'} · ${b.distance_km} km · ${b.bearing_deg}° · click to turn</title>
          </circle>`;
