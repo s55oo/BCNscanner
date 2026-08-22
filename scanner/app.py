@@ -26,7 +26,12 @@ BANDS = {
     "2m": {
         "url": "https://mmmonvhf.de/beacon/download/bcn_2m.csv",
         "file": os.path.join(os.path.dirname(__file__), "data", "bcn_2m.csv"),
-    }
+    },
+    # 6m: DL8WX beacon list (HTML table, needs its own parser - planned)
+    "6m": {
+        "url": "http://dl8wx.de/baken_50.htm",
+        "file": os.path.join(os.path.dirname(__file__), "data", "baken_50.htm"),
+    },
 }
 
 CTY = {
