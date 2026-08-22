@@ -250,7 +250,8 @@ def status():
         "continent_counts": continents,
         "dxcc_entities": len({b["dxcc"] for b in beacons if "dxcc" in b}),
         "rotator": {"enabled": rotator.ENABLED, "type": rotator.TYPE},
-        "radio": {"enabled": radio.ENABLED, "tune_mode": radio.TUNE_MODE},
+        "radio": {"enabled": radio.ENABLED, "tune_mode": radio.TUNE_MODE,
+                  "model": radio.MODEL},
         "updated_utc": (
             datetime.fromtimestamp(loaded_at, timezone.utc).isoformat()
             if loaded_at else None

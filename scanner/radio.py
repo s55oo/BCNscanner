@@ -10,6 +10,9 @@ TYPE = os.environ.get("RADIO_TYPE", "rigctld").strip().lower()
 HOST = os.environ.get("RADIO_HOST", "127.0.0.1").strip()
 PORT = int(os.environ.get("RADIO_PORT", "4532"))
 TUNE_MODE = os.environ.get("RADIO_TUNE_MODE", "CW").strip().upper()
+# Informational rig model (e.g. TS-590SG). flrig handles the rig itself;
+# relevant when using rigctld directly (hamlib model id / serial speed).
+MODEL = os.environ.get("RADIO_MODEL", "").strip()
 # Transverter LO offset in Hz added to the rig frequency (e.g. 130000000
 # makes the TS-590SG's 14.174 MHz read as 144.174 MHz). Subtracted again
 # when tuning.
