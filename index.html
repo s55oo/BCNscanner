@@ -214,6 +214,7 @@
     bearing from <b id="mygrid">—</b> · updated
     <b id="updated">—</b> · <span id="clock">--:--:--</span> UTC
   </div>
+  <span id="app-version" style="color:#888;font-size:11px;font-weight:bold;white-space:nowrap" title="BCNscanner version"></span>
 </header>
 
 <div class="controls">
@@ -558,6 +559,11 @@ async function load() {
     $('updated').textContent =
       s.updated_utc ? new Date(s.updated_utc).toISOString().slice(11, 16) : '—';
     myGrid = s.listening_grid || '';
+    if (s.version) {
+      const v = document.getElementById('app-version');
+      v.textContent = 'v' + s.version + ' by S55OO & AI';
+      v.title = 'BCNscanner v' + s.version + ' done by S55OO & AI';
+    }
     initRotator(s);
     initRadio(s);
     render();

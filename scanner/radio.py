@@ -3,11 +3,17 @@ import re
 import socket
 import threading
 import time
+import xmlrpc.client
 
 ENABLED = os.environ.get("RADIO_ENABLED", "no").strip().lower() in ("yes", "true", "1", "on")
+TYPE = os.environ.get("RADIO_TYPE", "rigctld").strip().lower()
 HOST = os.environ.get("RADIO_HOST", "127.0.0.1").strip()
 PORT = int(os.environ.get("RADIO_PORT", "4532"))
-TUNE_MODE = os.environ.get("RADIO_TUNE_MODE", "USB").strip().upper()
+TUNE_MODE = os.environ.get("RADIO_TUNE_MODE", "CW").strip().upper()
+# Transverter LO offset in Hz added to the rig frequency (e.g. 130000000
+# makes the TS-590SG's 14.174 MHz read as 144.174 MHz). Subtracted again
+# when tuning.
+FREQ_OFFSET = int(os.environ.get("RADIO_FREQ_OFFSET", "0") or 0)
 
 RPRT_RE = re.compile(r"^RPRT\s*(-?\d+)$")
 VFO_PREFIX_RE = re.compile(r"^(?:currVFO|VFO[A-Z]):\s*")
@@ -16,6 +22,7 @@ _state = {"freq_hz": None, "source": None, "ts": 0}
 _lock = threading.RLock()
 _sock = None
 _buf = None
+_xmlrpc = None
 
 
 def set_state(freq_hz, source):
@@ -27,6 +34,8 @@ def get_state():
     with _lock:
         return dict(_state)
 
+
+# --- rigctld backend -------------------------------------------------------
 
 def _connect():
     global _sock, _buf
@@ -80,28 +89,89 @@ def set_cmd(line):
     return int(m.group(1)) == 0
 
 
-def get_freq():
-    """Query current VFO frequency in Hz. Updates state as 'controller'."""
+def _rigctld_get_freq():
     r = _exchange("f")
     try:
-        hz = int(r)
+        return int(r)
     except ValueError:
         raise ConnectionError(f"unexpected rigctld reply: {r!r}")
-    set_state(hz, "controller")
-    return hz
 
 
-def tune(freq_hz):
+def _rigctld_tune(raw_hz):
     """Optionally set TUNE_MODE first (passband 0 = rig default), then tune."""
     ok = True
     if TUNE_MODE:
         ok = set_cmd(f"M {TUNE_MODE} 0")
     if ok:
-        ok = set_cmd(f"F {int(freq_hz)}")
-    if ok:
-        set_state(freq_hz, "commanded")
-    else:
+        ok = set_cmd(f"F {int(raw_hz)}")
+    if not ok:
         raise ConnectionError("rigctld rejected command (RPRT error)")
+
+
+# --- flrig backend (XML-RPC) -----------------------------------------------
+
+def _flrig():
+    global _xmlrpc
+    with _lock:
+        if _xmlrpc is None:
+            _xmlrpc = xmlrpc.client.ServerProxy(
+                f"http://{HOST}:{PORT}/RPC2", allow_none=True)
+        return _xmlrpc
+
+
+def _flrig_reset():
+    global _xmlrpc
+    with _lock:
+        _xmlrpc = None
+
+
+def _flrig_get_freq():
+    p = _flrig()
+    try:
+        v = p.rig.get_vfoA()
+    except (OSError, xmlrpc.client.Error) as e:
+        _flrig_reset()
+        raise ConnectionError(f"flrig unreachable at {HOST}:{PORT}: {e}")
+    try:
+        return int(float(str(v).split()[0]))
+    except (ValueError, IndexError):
+        raise ConnectionError(f"unexpected flrig reply: {v!r}")
+
+
+def _flrig_tune(raw_hz):
+    p = _flrig()
+    try:
+        if TUNE_MODE:
+            p.rig.set_modeA(TUNE_MODE, "0")
+        p.rig.set_frequency(float(int(raw_hz)))
+    except (OSError, xmlrpc.client.Error) as e:
+        _flrig_reset()
+        raise ConnectionError(f"flrig unreachable at {HOST}:{PORT}: {e}")
+
+
+# --- common -----------------------------------------------------------------
+
+if TYPE == "flrig":
+    _raw_get_freq = _flrig_get_freq
+    _raw_tune = _flrig_tune
+else:
+    _raw_get_freq = _rigctld_get_freq
+    _raw_tune = _rigctld_tune
+
+
+def get_freq():
+    """Query current VFO frequency in Hz (offset-corrected).
+
+    Updates state as 'controller'."""
+    hz = _raw_get_freq() + FREQ_OFFSET
+    set_state(hz, "controller")
+    return hz
+
+
+def tune(freq_hz):
+    """Tune to an offset-corrected RF frequency in Hz."""
+    _raw_tune(int(freq_hz) - FREQ_OFFSET)
+    set_state(freq_hz, "commanded")
 
 
 def poll_loop():

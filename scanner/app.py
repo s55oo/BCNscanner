@@ -16,6 +16,12 @@ import radio
 
 app = Flask(__name__)
 
+VERSION = "dev"
+_version_file = os.path.join(os.path.dirname(__file__), "VERSION")
+if os.path.exists(_version_file):
+    with open(_version_file) as f:
+        VERSION = f.read().strip() or "dev"
+
 BANDS = {
     "2m": {
         "url": "https://mmmonvhf.de/beacon/download/bcn_2m.csv",
@@ -230,6 +236,7 @@ def status():
         if cont:
             continents[cont] = continents.get(cont, 0) + 1
     return jsonify({
+        "version": VERSION,
         "band": "2m",
         "source": BANDS["2m"]["url"],
         "listening_grid": LISTENING_GRID if valid_grid(LISTENING_GRID) else None,

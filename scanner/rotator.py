@@ -13,7 +13,7 @@ PORT = int(os.environ.get("ROTATOR_PORT", "80"))
 
 AZ_RE = re.compile(r"AZ\s*=\s*([+-]?\d+)|[+-]\d{3,4}")
 PST_AZ_RE = re.compile(r"AZ\s*[:=]\s*([+-]?\d+(?:\.\d+)?)")
-PST_WEB_AZ_RE = re.compile(r"Bearing\s*=\s*([+-]?\d+(?:\.\d+)?)")
+PST_WEB_AZ_RE = re.compile(r"(?:Bearing|AZ)\s*=\s*([+-]?\d+(?:\.\d+)?)")
 
 _state = {"bearing": None, "source": None, "ts": 0}
 _lock = threading.Lock()
@@ -40,10 +40,15 @@ def _http_get(path):
         return r.read().decode("utf-8", "replace")
 
 
-def move(bearing):
+def move(bearing, el=None):
+    """Point the antenna. PstRotator Web backend mirrors CTESTKST:
+    command /PstRotator.htm?az=NNN&el=NNN (el omitted = unchanged)."""
     az = "%03d" % int(round(float(bearing)))
     if TYPE == "pstrotator-http":
-        _http_get("/PstRotatorAz.htm?az=" + az)
+        path = "/PstRotator.htm?az=" + az
+        if el is not None:
+            path += "&el=" + ("%03d" % int(round(float(el))))
+        _http_get(path)
         set_state(az, "commanded")
         return ""
     if TYPE == "pstrotator":
@@ -85,7 +90,8 @@ def talk(payload, window=0.8, stop_re=None):
 def read():
     """Query current azimuth from the controller. Returns int or None."""
     if TYPE == "pstrotator-http":
-        m = PST_WEB_AZ_RE.search(_http_get("/PstRotatorAz.htm"))
+        page = _http_get("/PstRotator.htm?")
+        m = PST_WEB_AZ_RE.search(page)
         if not m:
             return None
         az = int(float(m.group(1))) % 360

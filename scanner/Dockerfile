@@ -8,7 +8,7 @@ RUN apt-get update \
 
 RUN pip install --no-cache-dir flask gunicorn
 
-COPY app.py rotator.py radio.py .
+COPY app.py rotator.py radio.py VERSION .
 COPY data/ data/
 
 EXPOSE 5000
