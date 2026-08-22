@@ -47,14 +47,14 @@ LISTENING_GRID=JN76JG
 # Rotator (same backends as CTESTKST)
 ROTATOR_ENABLED=yes
 ROTATOR_TYPE=pstrotator-http   # pstrotator-http | pstrotator | gs232
-ROTATOR_HOST=10.147.17.32
+ROTATOR_HOST=192.168.1.10
 ROTATOR_PORT=80                # http port | UDP cmd port | TCP port
 ROTATOR_CMD_PORT=12000         # pstrotator UDP command port (reports on +1)
 ROTATOR_TCP_PORT=2000          # gs232 raw TCP port
 
 # Radio via rigctld
 RADIO_ENABLED=yes
-RADIO_HOST=10.147.17.32         # host running rigctld (shack box)
+RADIO_HOST=192.168.1.10         # host running rigctld (shack box)
 RADIO_PORT=4532                 # rigctld default port
 RADIO_TUNE_MODE=USB            # mode set before each tune; empty = don't touch mode
 ```
@@ -64,7 +64,7 @@ RADIO_TUNE_MODE=USB            # mode set before each tune; empty = don't touch 
 | `LISTENING_GRID` | `JN76JG` | Your QRA locator, drives QRB/azimuth |
 | `ROTATOR_ENABLED` | `no` | Master switch for /api/rotator |
 | `ROTATOR_TYPE` | `pstrotator-http` | `pstrotator-http`, `pstrotator` (UDP), `gs232` (TCP) |
-| `ROTATOR_HOST` | `10.147.17.32` | Controller address |
+| `ROTATOR_HOST` | `192.168.1.10` | Controller address |
 | `ROTATOR_PORT` | `80` | Per-type port (see above) |
 | `RADIO_ENABLED` | `no` | Master switch for /api/radio |
 | `RADIO_HOST` / `RADIO_PORT` | `127.0.0.1` / `4532` | rigctld endpoint |
