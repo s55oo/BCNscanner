@@ -15,9 +15,10 @@ Live beacon data is pulled from [mmmonvhf.de](https://www.mmmonvhf.de/bcn.php), 
 - **Status switches** — `noP` / `noU` / `noX` / `noT` hide Proposed / Unknown / Off-air / Testing beacons; all filters persist in the browser
 - **Distance limiter** — `dist` button caps the list/radar to a max range (100–2000 km); left-click widens, right-click narrows
 - **Radar scope** — beacons plotted around your grid by bearing/distance, range rings, antenna beam cone (±30°), tuned-beacon highlight
-- **Rotator control** — click any bearing (table cell or radar dot) to turn the antenna; live azimuth display polled from the controller
+- **Rotator control** — click any bearing (table cell or radar dot) to turn the antenna; azimuth-only commands with elevation fixed at 1° (`el=001`), live azimuth display polled from the controller
 - **Radio tuning** — click any frequency to tune the radio via Hamlib `rigctld` (mode fixed to USB by default)
 - **DXCC engine** — longest-prefix matching against full `cty.dat` incl. `=FULLCALL` exceptions and zone-override tags
+- **Help page** — built-in `/help.html` documenting all controls, filters, radar, hardware behaviour and troubleshooting; linked from the footer
 
 ## Requirements
 
@@ -100,7 +101,7 @@ Browser ──:8083──> nginx ──> Flask API (:5000)
 | GET | `/api/beacons` | Full filtered-source beacon list with DXCC, continent, qrb |
 | GET | `/api/status` | Counts, continents, DXCC entities, grid, update time, subsystem states |
 | GET | `/api/rotator` | Antenna azimuth + source (`controller`/`commanded`) |
-| POST | `/api/rotator` | Turn antenna: `{"bearing": 180}` |
+| POST | `/api/rotator` | Turn antenna: `{"bearing": 180}` — azimuth only, EL always fixed at 001 |
 | GET | `/api/radio` | VFO frequency + source, rigctld endpoint info |
 | POST | `/api/radio` | Tune: `{"freq_mhz": 144.405}` (`freq_khz`/`freq_hz` also accepted) |
 
@@ -114,6 +115,7 @@ Hardware endpoints return `400 {"error":"... disabled"}` unless enabled in confi
 - **dist** button limits beacons to a maximum distance: left-click steps the range up (`all → 100 → … → 2000 km`, wraps), right-click steps it down; label shows the active cap and the setting survives reloads
 - Radar dots show call/DXCC/km/bearing on hover; beam cone follows reported azimuth
 - All filter/toggle states survive reloads (browser localStorage)
+- In-app documentation lives at **/help.html** (footer → "help") — controls reference, status codes, troubleshooting and API quick reference
 
 ## Beacon Status Codes
 

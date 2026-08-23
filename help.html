@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BCNscanner — Help</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --panel: #f4f6f9;
+    --border: #d8dee7;
+    --text: #16212e;
+    --muted: #5c6b7c;
+    --accent: #17864b;
+    --warn: #b96a06;
+    --info: #2b6cb0;
+    --maxw: 900px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    min-height: 100vh;
+  }
+  header {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 24px 16px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h1 { font-size: 1.4rem; letter-spacing: 1px; }
+  h1 span { color: var(--accent); }
+  .status-line { color: var(--muted); font-size: .85rem; }
+  .status-line b { color: var(--text); }
+  main {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 16px 32px;
+  }
+  section { margin-bottom: 28px; }
+  h2 {
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  h3 { font-size: .9rem; margin: 14px 0 6px; color: var(--text); }
+  p, li { font-size: .85rem; line-height: 1.6; }
+  ul, ol { padding-left: 22px; margin: 6px 0; }
+  li { margin-bottom: 4px; }
+  code, kbd {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: .82rem;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: .82rem; white-space: nowrap; }
+  th {
+    color: var(--muted);
+    font-weight: normal;
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: 1px;
+  }
+  td.desc { white-space: normal; }
+  .badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: .72rem;
+    border: 1px solid var(--border);
+  }
+  .st-O { color: var(--accent); border-color: var(--accent); }
+  .st-T { color: var(--warn); border-color: var(--warn); }
+  .st-P { color: var(--info); border-color: var(--info); }
+  .st-X { color: #d33a3a; border-color: #d33a3a; }
+  .st-U { color: var(--muted); }
+  .btn-ref {
+    display: inline-block;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1px 10px;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--panel);
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: .82rem;
+    line-height: 1.5;
+  }
+  a { color: var(--info); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  footer {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: .75rem;
+    padding-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>BCN<span>scanner</span> — Help</h1>
+  <div class="status-line"><span id="app-version"></span> · <a href="/">← back to scanner</a></div>
+</header>
+
+<main>
+
+<section>
+  <h2>What is this?</h2>
+  <p>BCNscanner monitors the MMMonVHF <b>2 m beacon list</b>, resolves each callsign to its
+  DXCC country via <code>cty.dat</code>, and computes distance/bearing from your home locator.
+  With optional hardware enabled it can also turn your antenna (rotator) and tune your radio
+  (<code>rigctld</code>) straight from the beacon list or radar scope.</p>
+  <p>Data refreshes every 12 hours from mmmonvhf.de and country-files.com; bundled fallback
+  copies are used when the internet is unreachable.</p>
+</section>
+
+<section>
+  <h2>Getting started</h2>
+  <ol>
+    <li>Set <code>LISTENING_GRID</code> (your Maidenhead locator) in the server's <code>.env</code> file and restart the stack.</li>
+    <li>Reload the page — the header shows your grid, and every beacon gets distance + bearing.</li>
+    <li>To control hardware, enable rotator/radio options in <code>.env</code> first (they stay hidden otherwise).</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Header readouts</h2>
+  <ul>
+    <li><b>Rig frequency</b> (left) — live VFO frequency from rigctld; shown as demo value <code>144.400 MHz</code> until hardware reports.</li>
+    <li><b>Antenna azimuth</b> (right) — live bearing from the rotator controller; demo value <code>180°</code> until hardware reports.</li>
+    <li>Values turn <i style="color:#b96a06">amber italic</i> when you commanded them manually but the controller has not confirmed yet.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Controls bar</h2>
+  <table>
+    <tr><th>Control</th><th class="desc">What it does</th></tr>
+    <tr><td><span class="btn-ref">filter box</span></td><td class="desc">Live search across callsign, locator, DXCC country, comment and frequency.</td></tr>
+    <tr><td><span class="btn-ref">noP</span></td><td class="desc">Hide Proposed beacons.</td></tr>
+    <tr><td><span class="btn-ref">noU</span></td><td class="desc">Hide Unknown-status beacons.</td></tr>
+    <tr><td><span class="btn-ref">noX</span></td><td class="desc">Hide Off-air beacons.</td></tr>
+    <tr><td><span class="btn-ref">noT</span></td><td class="desc">Hide Testing beacons.</td></tr>
+    <tr><td><span class="btn-ref">radar</span></td><td class="desc">Show/hide the radar scope panel.</td></tr>
+    <tr><td><span class="btn-ref">dist</span></td><td class="desc">Distance limiter: left-click widens the range (all → 100 → … → 2000 km, wraps), right-click narrows. The cap applies to both table and radar.</td></tr>
+    <tr><td><span class="btn-ref">tune</span></td><td class="desc">Arms radio tuning (only visible when radio control is enabled). While armed, click any MHz cell to tune the radio.</td></tr>
+    <tr><td><span class="btn-ref">roto</span></td><td class="desc">Arms antenna control (only visible when the rotator is enabled). While armed, click any bearing cell or radar dot to turn the antenna.</td></tr>
+    <tr><td><span class="btn-ref">az box</span></td><td class="desc">Type an azimuth (0–360) and press <kbd>Enter</kbd> for a manual antenna turn.</td></tr>
+    <tr><td><span class="btn-ref">MHz box</span></td><td class="desc">Type a frequency in MHz and press <kbd>Enter</kbd> to tune manually.</td></tr>
+    <tr><td><span class="btn-ref">EU / AS / … pills</span></td><td class="desc">Continent filter with per-continent beacon counts; click again for all continents.</td></tr>
+  </table>
+  <div class="note">All toggle/filter states persist in your browser (localStorage), including radar visibility and the distance cap.</div>
+</section>
+
+<section>
+  <h2>Beacon table</h2>
+  <p>Click any column header to sort (click again to reverse). Columns:</p>
+  <ul>
+    <li><b>MHz</b> — beacon frequency; <i>click to tune</i> (when <span class="btn-ref">tune</span> is armed)</li>
+    <li><b>Call</b> / <b>DXCC Country</b> / <b>Cont</b> — callsign, resolved country and continent</li>
+    <li><b>Locator</b> — beacon's Maidenhead grid</li>
+    <li><b>Dist km</b> / <b>Brg°</b> — great-circle distance and bearing from your grid; <i>click bearing to turn the antenna</i> (when <span class="btn-ref">roto</span> is armed)</li>
+    <li><b>ERP W</b> — effective radiated power</li>
+    <li><b>Sts</b> — status badge (see below)</li>
+    <li><b>Comment</b> — operator notes from the beacon list; hover a row for antenna/QTF details</li>
+  </ul>
+  <p>Rows inside the current beam (±30° of reported azimuth) get a subtle green tint; the tuned
+  beacon's row is highlighted blue.</p>
+</section>
+
+<section>
+  <h2>Radar scope</h2>
+  <ul>
+    <li>Your station sits at the center (green dot, labeled with your grid); North is up.</li>
+    <li>Beacons are plotted by bearing/distance; dot colour follows status, size grows when tuned.</li>
+    <li>The shaded green cone is your antenna beam (±30° around the reported azimuth).</li>
+    <li>Range rings adapt automatically to the farthest visible beacon.</li>
+    <li>Hover a dot for call/DXCC/km/bearing; click it to turn the antenna (rotator must be armed).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Rotator behaviour</h2>
+  <ul>
+    <li>Rotation is <b>azimuth-only</b>: every command sends just the target bearing.</li>
+    <li>Elevation is always set to <code>001</code> (1°) on each command — required by elevation-capable controllers that ignore commands without an EL field.</li>
+    <li>Supported backends (configured in <code>.env</code>): PstRotator HTTP (<code>/PstRotator.htm?az=…&amp;el=001</code>), PstRotator UDP (<code>&lt;AZIMUTH&gt;</code>/<code>&lt;ELEVATION&gt;</code>) and GS-232 over TCP.</li>
+    <li>Azimuth is polled from the controller every 2 s; amber italic readout = commanded, not yet confirmed.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Beacon status codes</h2>
+  <p>
+    <span class="badge st-O">O</span> Operational ·
+    <span class="badge st-T">T</span> Testing ·
+    <span class="badge st-P">P</span> Proposed ·
+    <span class="badge st-X">X</span> Off air ·
+    <span class="badge st-U">U</span> Unknown
+  </p>
+</section>
+
+<section>
+  <h2>Troubleshooting</h2>
+  <table>
+    <tr><th>Symptom</th><th class="desc">Fix</th></tr>
+    <tr><td>"Rotator disabled in config"</td><td class="desc">Set <code>ROTATOR_ENABLED=yes</code> plus host/port in <code>.env</code>, then <code>docker compose up -d</code>.</td></tr>
+    <tr><td>"Rotor off" toast on click</td><td class="desc">Arm control first: click the <span class="btn-ref">roto</span> button.</td></tr>
+    <tr><td>"Tune off" toast on click</td><td class="desc">Arm control first: click the <span class="btn-ref">tune</span> button.</td></tr>
+    <tr><td>Demo values 144.400 MHz / 180° never change</td><td class="desc">Hardware endpoints disabled in config, or controller unreachable — check <code>docker logs -f bcnscanner-api</code>.</td></tr>
+    <tr><td>No distances/bearings</td><td class="desc"><code>LISTENING_GRID</code> missing/invalid in <code>.env</code>.</td></tr>
+    <tr><td>Stale beacon data</td><td class="desc">List auto-refreshes every 12 h; restart the API container to force a fresh download.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>API quick reference</h2>
+  <table>
+    <tr><th>Method</th><th>Path</th><th class="desc">Purpose</th></tr>
+    <tr><td>GET</td><td><code>/api/beacons</code></td><td class="desc">Full beacon list with DXCC, continent, QRB</td></tr>
+    <tr><td>GET</td><td><code>/api/status</code></td><td class="desc">Counts, grid, update time, subsystem states</td></tr>
+    <tr><td>GET</td><td><code>/api/rotator</code></td><td class="desc">Antenna azimuth + source (controller/commanded)</td></tr>
+    <tr><td>POST</td><td><code>/api/rotator</code></td><td class="desc">Turn antenna: <code>{"bearing": 180}</code> (EL always 001)</td></tr>
+    <tr><td>GET</td><td><code>/api/radio</code></td><td class="desc">VFO frequency + source</td></tr>
+    <tr><td>POST</td><td><code>/api/radio</code></td><td class="desc">Tune: <code>{"freq_mhz": 144.405}</code></td></tr>
+  </table>
+  <p>See the project README on GitHub for full configuration reference.</p>
+</section>
+
+</main>
+
+<footer>
+  BCNscanner · sources:
+  <a href="https://www.mmmonvhf.de/bcn.php" target="_blank">MMMonVHF</a> ·
+  <a href="https://www.country-files.com/" target="_blank">country-files.com</a> ·
+  <a href="/">back to scanner</a>
+</footer>
+
+<script>
+fetch('/api/status').then(r => r.ok ? r.json() : null).then(s => {
+  if (!s || !s.version) return;
+  const v = document.getElementById('app-version');
+  v.textContent = 'v' + s.version + ' by S55OO & AI';
+}).catch(() => {});
+</script>
+</body>
+</html>
