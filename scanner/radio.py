@@ -148,7 +148,10 @@ def _flrig_tune(raw_hz):
     p = _flrig()
     try:
         if TUNE_MODE:
-            p.rig.set_modeA(TUNE_MODE, str(TUNE_BW))
+            p.rig.set_modeA(TUNE_MODE)
+            # Mode change resets the rig's stored filter -> set bw after mode
+            if TUNE_BW:
+                p.rig.set_verify_bandwidth(int(TUNE_BW))
         p.rig.set_frequency(float(int(raw_hz)))
     except (OSError, xmlrpc.client.Error) as e:
         _flrig_reset()

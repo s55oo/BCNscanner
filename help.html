@@ -168,6 +168,17 @@
     <tr><td><span class="btn-ref">EU / AS / … pills</span></td><td class="desc">Continent filter with per-continent beacon counts; click again for all continents.</td></tr>
   </table>
   <div class="note">All toggle/filter states persist in your browser (localStorage), including radar visibility and the distance cap.</div>
+  <div class="note">Active toggle buttons (<span class="btn-ref">noP</span> <span class="btn-ref">noU</span> <span class="btn-ref">noX</span> <span class="btn-ref">noT</span> <span class="btn-ref">radar</span> <span class="btn-ref">tune</span> <span class="btn-ref">roto</span>) light up bright green so armed/hidden state is visible at a glance.</div>
+</section>
+
+<section>
+  <h2>Tune filter</h2>
+  <ul>
+    <li>Every tune command selects mode (<code>RADIO_TUNE_MODE</code>, default <code>CW</code>) together with an explicit filter bandwidth (<code>RADIO_TUNE_BW</code>, default <code>600 Hz</code>).</li>
+    <li>Works with both backends: flrig (<code>set_modeA</code> + <code>set_verify_bandwidth</code>, sent in that order because a mode change resets the rig's stored filter) and rigctld (<code>M CW 600</code>).</li>
+    <li>Set <code>RADIO_TUNE_BW=0</code> to leave the rig's own per-mode filter unchanged.</li>
+    <li>Apply changes with <code>docker compose up -d</code>; see the <a href="/faq.html">FAQ</a> for common questions.</li>
+  </ul>
 </section>
 
 <section>

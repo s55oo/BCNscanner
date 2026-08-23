@@ -16,9 +16,10 @@ Live beacon data is pulled from [mmmonvhf.de](https://www.mmmonvhf.de/bcn.php), 
 - **Distance limiter** — `dist` button caps the list/radar to a max range (100–2000 km); left-click widens, right-click narrows
 - **Radar scope** — beacons plotted around your grid by bearing/distance, range rings, antenna beam cone (±30°), tuned-beacon highlight
 - **Rotator control** — click any bearing (table cell or radar dot) to turn the antenna; azimuth-only commands with elevation fixed at 1° (`el=001`), live azimuth display polled from the controller
-- **Radio tuning** — click any frequency to tune the radio via Hamlib `rigctld` (mode fixed to USB by default)
+- **Radio tuning** — click any frequency to tune the radio via flrig or Hamlib `rigctld`; mode + explicit filter bandwidth applied on every tune (default CW / 600 Hz, configurable)
+- **Green toggle indicators** — active toggle buttons (`noP`/`noU`/`noX`/`noT`, `radar`, `tune`, `roto`) light up bright green
 - **DXCC engine** — longest-prefix matching against full `cty.dat` incl. `=FULLCALL` exceptions and zone-override tags
-- **Help page** — built-in `/help.html` documenting all controls, filters, radar, hardware behaviour and troubleshooting; linked from the footer
+- **Help pages** — built-in `/help.html` (controls reference, troubleshooting) and `/faq.html` (add-ons FAQ); linked from the footer
 
 ## Requirements
 
@@ -70,6 +71,8 @@ RADIO_TUNE_MODE=USB            # mode set before each tune; empty = don't touch 
 | `RADIO_ENABLED` | `no` | Master switch for /api/radio |
 | `RADIO_HOST` / `RADIO_PORT` | `127.0.0.1` / `4532` | rigctld endpoint |
 | `RADIO_TUNE_MODE` | `USB` | Mode applied before every tune |
+| `RADIO_TUNE_BW` | `600` | Filter bandwidth in Hz selected with the mode; `0` = rig default. flrig backends: sent after the mode (a mode change resets the rig's stored filter) via `set_verify_bandwidth` |
+| `RADIO_FREQ_OFFSET` | `0` | Transverter LO offset in Hz added to frequency readouts, subtracted when tuning |
 
 ## Services
 
