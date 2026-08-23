@@ -40,14 +40,12 @@ def _http_get(path):
         return r.read().decode("utf-8", "replace")
 
 
-def move(bearing, el=None):
-    """Point the antenna. PstRotator Web backend mirrors CTESTKST:
-    command /PstRotator.htm?az=NNN&el=NNN (el omitted = unchanged)."""
+def move(bearing, el=1):
+    """Point the antenna. Rotation is azimuth-only; elevation is always 01."""
     az = "%03d" % int(round(float(bearing)))
+    elv = "%03d" % int(round(float(el)))
     if TYPE == "pstrotator-http":
-        path = "/PstRotator.htm?az=" + az
-        if el is not None:
-            path += "&el=" + ("%03d" % int(round(float(el))))
+        path = "/PstRotator.htm?az=" + az + "&el=" + elv
         _http_get(path)
         set_state(az, "commanded")
         return ""
@@ -55,7 +53,8 @@ def move(bearing, el=None):
         cmd_port = int(_cfg("ROTATOR_CMD_PORT", str(PORT)))
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.settimeout(2)
-            s.sendto(f"<COMMANDS><AZIMUTH>{az}</AZIMUTH></COMMANDS>".encode(),
+            s.sendto(f"<COMMANDS><AZIMUTH>{az}</AZIMUTH>"
+                     f"<ELEVATION>{elv}</ELEVATION></COMMANDS>".encode(),
                      (HOST, cmd_port))
         set_state(az, "commanded")
         return ""
