@@ -7,6 +7,7 @@ services:
     volumes:
       - ./index.html:/usr/share/nginx/html/index.html:ro
       - ./help.html:/usr/share/nginx/html/help.html:ro
+      - ./faq.html:/usr/share/nginx/html/faq.html:ro
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
     depends_on:
@@ -30,5 +31,6 @@ services:
       - RADIO_HOST=${RADIO_HOST:-127.0.0.1}
       - RADIO_PORT=${RADIO_PORT:-4532}
       - RADIO_TUNE_MODE=${RADIO_TUNE_MODE:-CW}
+      - RADIO_TUNE_BW=${RADIO_TUNE_BW:-600}
       - RADIO_FREQ_OFFSET=${RADIO_FREQ_OFFSET:-0}
     restart: unless-stopped

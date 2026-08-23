@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BCNscanner — FAQ</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --panel: #f4f6f9;
+    --border: #d8dee7;
+    --text: #16212e;
+    --muted: #5c6b7c;
+    --accent: #17864b;
+    --warn: #b96a06;
+    --info: #2b6cb0;
+    --maxw: 900px;
+    --ok-green: #2ecc71;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    min-height: 100vh;
+  }
+  header {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 24px 16px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h1 { font-size: 1.4rem; letter-spacing: 1px; }
+  h1 span { color: var(--accent); }
+  .status-line { color: var(--muted); font-size: .85rem; }
+  .status-line b { color: var(--text); }
+  main {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 16px 32px;
+  }
+  section { margin-bottom: 28px; }
+  h2 {
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  p, li { font-size: .85rem; line-height: 1.6; }
+  ul, ol { padding-left: 22px; margin: 6px 0; }
+  li { margin-bottom: 4px; }
+  code, kbd {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: .82rem;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: .82rem; white-space: nowrap; }
+  th {
+    color: var(--muted);
+    font-weight: normal;
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: 1px;
+  }
+  td.desc { white-space: normal; }
+  td.q { white-space: normal; font-weight: bold; width: 38%; }
+  .btn-ref {
+    display: inline-block;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1px 10px;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+  .btn-roto {
+    display: inline-block;
+    background: rgba(46, 204, 113, .15);
+    border: 1px solid var(--ok-green);
+    border-radius: 6px;
+    padding: 1px 10px;
+    font-size: .8rem;
+    color: var(--ok-green);
+    box-shadow: 0 0 8px rgba(46, 204, 113, .5);
+  }
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--panel);
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: .82rem;
+    line-height: 1.5;
+  }
+  details {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: var(--bg);
+  }
+  details[open] { background: var(--panel); }
+  summary {
+    cursor: pointer;
+    padding: 9px 12px;
+    font-size: .86rem;
+    font-weight: bold;
+    list-style-position: inside;
+  }
+  summary:hover { color: var(--info); }
+  details > div { padding: 2px 12px 12px 34px; }
+  a { color: var(--info); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  footer {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: .75rem;
+    padding-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>BCN<span>scanner</span> — FAQ &amp; Add-ons</h1>
+  <div class="status-line"><span id="app-version"></span> · <a href="/">← back to scanner</a> · <a href="/help.html">full help</a></div>
+</header>
+
+<main>
+
+<section>
+  <h2>Add-ons — what's new</h2>
+  <table>
+    <tr><th>Add-on</th><th class="desc">Description</th></tr>
+    <tr>
+      <td><span class="btn-roto">roto</span> green indicator</td>
+      <td class="desc">When armed, the <code>roto</code> button lights up <b style="color:#2ecc71">bright green</b> (glowing border and tinted background) so you can see at a glance that antenna control is active. Clicking it again disarms it and the light goes out.</td>
+    </tr>
+    <tr>
+      <td>Tune filter bandwidth</td>
+      <td class="desc">Every tune command now selects an explicit receiver filter instead of leaving the rig at its default. Default is <b>600 Hz</b>, configured via <code>RADIO_TUNE_BW</code> in <code>.env</code>. Set it to <code>0</code> to restore the rig's own default filter.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Frequently asked questions</h2>
+
+  <details open>
+    <summary>The roto button used to be hard to tell apart — how does it look now?</summary>
+    <div>
+      <p>Armed state is unmistakable: bright green text and border with a soft green glow.
+      Disarmed it looks like every other toggle button (grey). The colour change is instant
+      on click, together with the "Rotor ON/OFF" toast.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Why did my rig switch to a 400 Hz filter when tuning?</summary>
+    <div>
+      <p>It didn't choose it — that was your radio's <i>default</i> CW passband. Previously the
+      scanner set the mode with passband <code>0</code>, meaning "whatever the rig uses by default",
+      and the TS-590SG defaults to 400 Hz on CW.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>How do I change the tune filter bandwidth?</summary>
+    <div>
+      <ol>
+        <li>Edit <code>RADIO_TUNE_BW</code> in the server's <code>.env</code> file (value in Hz).</li>
+        <li>Apply with <code>docker compose up -d</code>.</li>
+        <li>Next tune selects the mode (<code>RADIO_TUNE_MODE</code>) together with that passband.</li>
+      </ol>
+      <p>Common values: <code>500</code>/<code>600</code> for CW beacon work, <code>2400</code> for SSB,
+      <code>0</code> for rig default.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>I clicked a bearing but nothing turned — what's wrong?</summary>
+    <div>
+      <p>Check three things:</p>
+      <ol>
+        <li>Is the rotator enabled in <code>.env</code> (<code>ROTATOR_ENABLED=yes</code>)? The <code>roto</code> button is hidden otherwise.</li>
+        <li>Is the button glowing green (armed)? Clicking works only while armed.</li>
+        <li>Is the controller reachable? Amber italic azimuth readout means a command was sent but not confirmed yet; check <code>docker logs -f bcnscanner-api</code>.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Does the green roto state survive a page reload?</summary>
+    <div>
+      <p>No — arming is deliberately a per-session safety measure. After a reload both
+      <code>tune</code> and <code>roto</code> start disarmed so a stale open tab can never move
+      hardware by accident. Other toggles (filters, radar, distance cap) <i>do</i> persist.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I use a different filter for different modes?</summary>
+    <div>
+      <p>The passband is one value applied whenever the scanner tunes (it always sends mode +
+      bandwidth together). Change <code>RADIO_TUNE_MODE</code> and <code>RADIO_TUNE_BW</code> as a pair,
+      or set <code>RADIO_TUNE_BW=0</code> and pick filters on the rig itself.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Where are all other controls documented?</summary>
+    <div>
+      <p>See the full <a href="/help.html">Help page</a> — it covers the controls bar, beacon table,
+      radar scope, rotator behaviour, status codes, troubleshooting and the API reference.</p>
+    </div>
+  </details>
+
+</section>
+
+<section>
+  <h2>Related settings reference</h2>
+  <table>
+    <tr><th>Setting (.env)</th><th>Default</th><th class="desc">Meaning</th></tr>
+    <tr><td><code>RADIO_TUNE_MODE</code></td><td><code>CW</code></td><td class="desc">Mode selected on every tune command</td></tr>
+    <tr><td><code>RADIO_TUNE_BW</code></td><td><code>600</code></td><td class="desc">Filter/passband in Hz selected with the mode; 0 = rig default</td></tr>
+    <tr><td><code>RADIO_FREQ_OFFSET</code></td><td><code>0</code></td><td class="desc">Transverter LO offset in Hz added to readouts, subtracted when tuning</td></tr>
+    <tr><td><code>ROTATOR_ENABLED</code></td><td><code>no</code></td><td class="desc">Shows the <span class="btn-ref">roto</span> button and enables antenna control</td></tr>
+    <tr><td><code>RADIO_ENABLED</code></td><td><code>no</code></td><td class="desc">Shows the <span class="btn-ref">tune</span> button and enables rig control</td></tr>
+  </table>
+  <div class="note">After changing any setting run <code>docker compose up -d</code> to apply it.</div>
+</section>
+
+</main>
+
+<footer>
+  BCNscanner · sources:
+  <a href="https://www.mmmonvhf.de/bcn.php" target="_blank">MMMonVHF</a> ·
+  <a href="https://www.country-files.com/" target="_blank">country-files.com</a> ·
+  <a href="/help.html">help</a> ·
+  <a href="/">back to scanner</a>
+</footer>
+
+<script>
+fetch('/api/status').then(r => r.ok ? r.json() : null).then(s => {
+  if (!s || !s.version) return;
+  const v = document.getElementById('app-version');
+  v.textContent = 'v' + s.version + ' by S55OO & AI';
+}).catch(() => {});
+</script>
+</body>
+</html>

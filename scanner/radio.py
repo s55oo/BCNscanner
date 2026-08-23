@@ -10,6 +10,9 @@ TYPE = os.environ.get("RADIO_TYPE", "rigctld").strip().lower()
 HOST = os.environ.get("RADIO_HOST", "127.0.0.1").strip()
 PORT = int(os.environ.get("RADIO_PORT", "4532"))
 TUNE_MODE = os.environ.get("RADIO_TUNE_MODE", "CW").strip().upper()
+# Filter/passband in Hz selected together with TUNE_MODE when tuning
+# (0 = rig default, e.g. TS-590SG CW default is 400 Hz).
+TUNE_BW = int(os.environ.get("RADIO_TUNE_BW", "600") or 0)
 # Informational rig model (e.g. TS-590SG). flrig handles the rig itself;
 # relevant when using rigctld directly (hamlib model id / serial speed).
 MODEL = os.environ.get("RADIO_MODEL", "").strip()
@@ -101,10 +104,10 @@ def _rigctld_get_freq():
 
 
 def _rigctld_tune(raw_hz):
-    """Optionally set TUNE_MODE first (passband 0 = rig default), then tune."""
+    """Set TUNE_MODE with TUNE_BW passband first, then tune."""
     ok = True
     if TUNE_MODE:
-        ok = set_cmd(f"M {TUNE_MODE} 0")
+        ok = set_cmd(f"M {TUNE_MODE} {TUNE_BW}")
     if ok:
         ok = set_cmd(f"F {int(raw_hz)}")
     if not ok:
@@ -145,7 +148,7 @@ def _flrig_tune(raw_hz):
     p = _flrig()
     try:
         if TUNE_MODE:
-            p.rig.set_modeA(TUNE_MODE, "0")
+            p.rig.set_modeA(TUNE_MODE, str(TUNE_BW))
         p.rig.set_frequency(float(int(raw_hz)))
     except (OSError, xmlrpc.client.Error) as e:
         _flrig_reset()
